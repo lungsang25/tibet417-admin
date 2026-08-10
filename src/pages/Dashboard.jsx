@@ -151,8 +151,10 @@ const Dashboard = ({ token }) => {
 
       {noTrafficYet && (
         <p className='text-sm text-gray-500 mt-4 border-2 border-gray-200 rounded p-4'>
-          No traffic recorded in this period. If the tag was installed recently, hits normally appear within a
-          few minutes — check GA4 → Reports → Realtime while loading the storefront to confirm it is firing.
+          No traffic recorded in this period. These figures come from GA4&apos;s processed reports, which lag
+          collection by several hours — a property in its first day reads zero here even while tracking
+          correctly. To check the tag itself, watch GA4 → Reports → Realtime while loading the storefront;
+          that updates within seconds.
         </p>
       )}
 
