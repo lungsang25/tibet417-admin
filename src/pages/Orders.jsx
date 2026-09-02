@@ -76,6 +76,38 @@ const Orders = ({ token }) => {
     }
   }
 
+  const cancelHandler = async (orderId) => {
+    if (!window.confirm('Cancel this order? Any pending bonus points from it will be voided and any redeemed points returned.')) return
+    try {
+      const response = await axios.post(backendUrl + '/api/order/cancel', { orderId }, { headers: { token } })
+      if (response.data.success) {
+        toast.success(response.data.message)
+        patchOrder(response.data.order)
+      } else {
+        toast.error(response.data.message)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message)
+    }
+  }
+
+  const refundHandler = async (orderId) => {
+    if (!window.confirm('Refund this order? Any confirmed bonus points it earned will be clawed back and any redeemed points returned.')) return
+    try {
+      const response = await axios.post(backendUrl + '/api/order/refund', { orderId }, { headers: { token } })
+      if (response.data.success) {
+        toast.success(response.data.message)
+        patchOrder(response.data.order)
+      } else {
+        toast.error(response.data.message)
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message)
+    }
+  }
+
   const header = (
     <div className='flex flex-wrap items-center gap-3 mb-4'>
       <h3 className='font-medium text-gray-700'>Orders</h3>
@@ -135,6 +167,8 @@ const Orders = ({ token }) => {
             meta={meta}
             onStatusChange={statusHandler}
             onSaved={patchOrder}
+            onCancel={cancelHandler}
+            onRefund={refundHandler}
           />
         ))}
       </div>

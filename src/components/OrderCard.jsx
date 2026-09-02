@@ -17,10 +17,21 @@ const StatusChip = ({ status }) => (
     </span>
 )
 
-const OrderCard = ({ order, token, meta, onStatusChange, onSaved }) => {
+const CancellationBadge = ({ status }) => {
+    if (status === 'cancelled') return <span className='text-xs px-2 py-1 border border-red-200 bg-red-50 text-red-700 rounded'>Cancelled</span>
+    if (status === 'refunded') return <span className='text-xs px-2 py-1 border border-orange-200 bg-orange-50 text-orange-700 rounded'>Refunded</span>
+    return null
+}
+
+const OrderCard = ({ order, token, meta, onStatusChange, onSaved, onCancel, onRefund }) => {
     const [open, setOpen] = useState(false)
     const tracking = order.tracking || {}
     const hasTracking = Boolean(tracking.number)
+    const cancellationStatus = order.cancellation?.status || 'none'
+    const canCancel = cancellationStatus === 'none' && order.status !== 'Delivered'
+    const canRefund = cancellationStatus === 'none'
+    const pointsEarned = order.pointsEarned || 0
+    const pointsRedeemed = order.redemption?.pointsRedeemed || 0
 
     return (
         <div className='border-2 border-gray-200 rounded p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700'>
@@ -65,6 +76,7 @@ const OrderCard = ({ order, token, meta, onStatusChange, onSaved }) => {
 
             <div className='flex flex-wrap items-center gap-3 mt-4'>
                 <StatusChip status={order.status} />
+                <CancellationBadge status={cancellationStatus} />
 
                 {hasTracking ? (
                     <span className='text-xs text-gray-500'>
@@ -74,13 +86,39 @@ const OrderCard = ({ order, token, meta, onStatusChange, onSaved }) => {
                     <span className='text-xs text-gray-400'>No tracking yet</span>
                 )}
 
-                <button
-                    onClick={() => setOpen((v) => !v)}
-                    className='text-xs px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 ml-auto'
-                    aria-expanded={open}
-                >
-                    {open ? 'Hide tracking' : hasTracking ? 'Edit tracking' : 'Add tracking'}
-                </button>
+                {(pointsEarned > 0 || pointsRedeemed > 0) && (
+                    <span className='text-xs text-gray-500'>
+                        {pointsEarned > 0 && `+${pointsEarned} pts earned`}
+                        {pointsEarned > 0 && pointsRedeemed > 0 && ' · '}
+                        {pointsRedeemed > 0 && `-${pointsRedeemed} pts redeemed`}
+                    </span>
+                )}
+
+                <div className='flex items-center gap-2 ml-auto'>
+                    {canCancel && (
+                        <button
+                            onClick={() => onCancel(order._id)}
+                            className='text-xs px-3 py-1 border border-red-200 text-red-600 rounded hover:bg-red-50'
+                        >
+                            Cancel
+                        </button>
+                    )}
+                    {canRefund && (
+                        <button
+                            onClick={() => onRefund(order._id)}
+                            className='text-xs px-3 py-1 border border-orange-200 text-orange-600 rounded hover:bg-orange-50'
+                        >
+                            Refund
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setOpen((v) => !v)}
+                        className='text-xs px-3 py-1 border border-gray-300 rounded hover:bg-gray-50'
+                        aria-expanded={open}
+                    >
+                        {open ? 'Hide tracking' : hasTracking ? 'Edit tracking' : 'Add tracking'}
+                    </button>
+                </div>
             </div>
 
             {open && (
