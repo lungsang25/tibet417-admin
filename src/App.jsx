@@ -7,6 +7,7 @@ import List from './pages/List'
 import Orders from './pages/Orders'
 import Dashboard from './pages/Dashboard'
 import BonusProgram from './pages/BonusProgram'
+import Looks from './pages/Looks'
 import Login from './components/Login'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -39,6 +40,7 @@ const App = () => {
                 <Route path='/list' element={<List token={token} />} />
                 <Route path='/orders' element={<Orders token={token} />} />
                 <Route path='/bonus-program' element={<BonusProgram token={token} />} />
+                <Route path='/looks' element={<Looks token={token} />} />
               </Routes>
             </div>
           </div>

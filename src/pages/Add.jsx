@@ -3,6 +3,7 @@ import {assets} from '../assets/assets'
 import axios from 'axios'
 import { backendUrl } from '../App'
 import { toast } from 'react-toastify'
+import { SEASONS } from '../utils/seasons'
 
 const Add = ({token}) => {
 
@@ -18,6 +19,7 @@ const Add = ({token}) => {
    const [subCategory, setSubCategory] = useState("Topwear");
    const [bestseller, setBestseller] = useState(false);
    const [sizes, setSizes] = useState([]);
+   const [seasons, setSeasons] = useState([]);
 
    const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -33,6 +35,7 @@ const Add = ({token}) => {
       formData.append("subCategory",subCategory)
       formData.append("bestseller",bestseller)
       formData.append("sizes",JSON.stringify(sizes))
+      formData.append("seasons",JSON.stringify(seasons))
 
       image1 && formData.append("image1",image1)
       image2 && formData.append("image2",image2)
@@ -145,6 +148,18 @@ const Add = ({token}) => {
               <p className={`${sizes.includes("XXL") ? "bg-pink-100" : "bg-slate-200" } px-3 py-1 cursor-pointer`}>XXL</p>
             </div>
           </div>
+        </div>
+
+        <div>
+          <p className='mb-2'>Seasons</p>
+          <div className='flex gap-3'>
+            {SEASONS.map(({ value, label }) => (
+              <div key={value} onClick={()=>setSeasons(prev => prev.includes(value) ? prev.filter( item => item !== value) : [...prev,value])}>
+                <p className={`${seasons.includes(value) ? "bg-pink-100" : "bg-slate-200" } px-3 py-1 cursor-pointer`}>{label}</p>
+              </div>
+            ))}
+          </div>
+          <p className='mt-1 text-xs text-gray-400'>Tick all four for year-round pieces.</p>
         </div>
 
         <div className='flex gap-2 mt-2'>
