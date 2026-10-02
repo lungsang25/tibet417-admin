@@ -65,7 +65,8 @@ const Sale = ({ token }) => {
   const [config, setConfig] = useState(null)
   const [status, setStatus] = useState(null)
   const [stages, setStages] = useState([])
-  const [stageMs, setStageMs] = useState(0)
+  const [limits, setLimits] = useState({ min: 24, max: 168 }) // hours
+  const [stageHoursInput, setStageHoursInput] = useState('24')
 
   const [selected, setSelected] = useState(() => new Set())
   const [startInput, setStartInput] = useState('')
@@ -76,7 +77,8 @@ const Sale = ({ token }) => {
     setConfig(data.config)
     setStatus(data.status)
     setStages(data.stages)
-    setStageMs(data.stageMs)
+    setLimits({ min: data.minStageMs / (60 * 60 * 1000), max: data.maxStageMs / (60 * 60 * 1000) })
+    setStageHoursInput(String(data.config.stageMs / (60 * 60 * 1000)))
   }
 
   const load = async () => {
@@ -149,6 +151,16 @@ const Sale = ({ token }) => {
     !status.active ||
     window.confirm('This sale is already live. Changing the start time restarts it from the first step. Continue?')
 
+  // Whole hours between the backend's min and max (24h – 7 days).
+  const parseStageMs = () => {
+    const hours = Number(stageHoursInput)
+    if (!Number.isInteger(hours) || hours < limits.min || hours > limits.max) {
+      toast.error(`Step length must be between ${limits.min} hours and ${limits.max / 24} days`)
+      return null
+    }
+    return hours * 60 * 60 * 1000
+  }
+
   const saveWithStartTime = () => {
     if (!startInput || Number.isNaN(new Date(startInput).getTime())) return toast.error('Choose a start date and time')
     if (selected.size === 0) return toast.error('Select at least one product')
@@ -157,15 +169,19 @@ const Sale = ({ token }) => {
     // the exact saved value: this is then just an edit of the product list and
     // must not restart the timetable.
     const unchanged = config.startAt !== null && toInputValue(config.startAt) === startInput
+    const stageMs = parseStageMs()
+    if (stageMs === null) return
     const startAt = unchanged ? config.startAt : new Date(startInput).getTime()
-    if (!unchanged && !confirmRestart()) return
-    post('save', { startAt, productIds: [...selected] }, startAt > Date.now() ? 'Sale scheduled' : 'Sale saved')
+    if ((!unchanged || stageMs !== config.stageMs) && !confirmRestart()) return
+    post('save', { startAt, stageMs, productIds: [...selected] }, startAt > Date.now() ? 'Sale scheduled' : 'Sale saved')
   }
 
   const startNow = () => {
     if (selected.size === 0) return toast.error('Select at least one product')
     if (!confirmRestart()) return
-    post('save', { startNow: true, productIds: [...selected] }, 'Sale started')
+    const stageMs = parseStageMs()
+    if (stageMs === null) return
+    post('save', { startNow: true, stageMs, productIds: [...selected] }, 'Sale started')
   }
 
   const endSale = () => {
@@ -190,7 +206,8 @@ const Sale = ({ token }) => {
     )
   }
 
-  const hoursPerStep = stageMs / (60 * 60 * 1000)
+  const enteredHours = Number(stageHoursInput)
+  const hoursPerStep = Number.isInteger(enteredHours) && enteredHours >= limits.min && enteredHours <= limits.max ? enteredHours : config.stageMs / (60 * 60 * 1000)
   const allVisibleSelected = visibleProducts.length > 0 && visibleProducts.every((p) => selected.has(p._id))
 
   return (
@@ -212,6 +229,21 @@ const Sale = ({ token }) => {
             </li>
           ))}
         </ul>
+        <label className='flex flex-col gap-1 text-sm mt-1'>
+          <span className='text-gray-500'>Length of each step (hours, {limits.min}–{limits.max} = {limits.min / 24}–{limits.max / 24} days)</span>
+          <input
+            type='number'
+            min={limits.min}
+            max={limits.max}
+            step={1}
+            value={stageHoursInput}
+            onChange={(e) => setStageHoursInput(e.target.value)}
+            className='p-2 border border-gray-300 rounded w-full sm:w-64'
+          />
+          <span className='text-xs text-gray-400'>
+            {Number.isInteger(hoursPerStep / 24) ? `${hoursPerStep / 24} day${hoursPerStep === 24 ? '' : 's'}` : `${(hoursPerStep / 24).toFixed(1)} days`} per step
+          </span>
+        </label>
         <label className='flex flex-col gap-1 text-sm mt-1'>
           <span className='text-gray-500'>Start time (your local time)</span>
           <input
