@@ -7,6 +7,38 @@ import OrderCard from '../components/OrderCard'
 
 const PAGE_SIZE = 50
 
+const PERIODS = [
+  { value: '', label: 'All time' },
+  { value: 'day', label: 'Day' },
+  { value: 'week', label: 'Week' },
+  { value: 'month', label: 'Month' },
+  { value: 'year', label: 'Year' },
+]
+
+const toInputDate = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+/** [from, to) in local time for the period containing `anchor` (YYYY-MM-DD). Weeks start Monday. */
+const getRange = (period, anchor) => {
+  if (!period || !anchor) return null
+  const [y, m, d] = anchor.split('-').map(Number)
+  if (!y || !m || !d) return null
+  let start, end
+  if (period === 'day') {
+    start = new Date(y, m - 1, d); end = new Date(y, m - 1, d + 1)
+  } else if (period === 'week') {
+    const offset = (new Date(y, m - 1, d).getDay() + 6) % 7
+    start = new Date(y, m - 1, d - offset); end = new Date(y, m - 1, d - offset + 7)
+  } else if (period === 'month') {
+    start = new Date(y, m - 1, 1); end = new Date(y, m, 1)
+  } else {
+    start = new Date(y, 0, 1); end = new Date(y + 1, 0, 1)
+  }
+  return { from: start.getTime(), to: end.getTime(), start, last: new Date(end.getTime() - 1) }
+}
+
+const fmt = (d) => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+
 const Orders = ({ token }) => {
 
   const [orders, setOrders] = useState([])
@@ -18,6 +50,11 @@ const Orders = ({ token }) => {
   const [status, setStatus] = useState('loading')
   const [message, setMessage] = useState('')
   const [filter, setFilter] = useState('')
+  const [period, setPeriod] = useState('')
+  const [anchor, setAnchor] = useState(() => toInputDate(new Date()))
+  const range = getRange(period, anchor)
+  const from = range?.from
+  const to = range?.to
 
   useEffect(() => { getOrderMeta().then(setMeta) }, [])
 
@@ -26,7 +63,7 @@ const Orders = ({ token }) => {
     setStatus('loading')
     try {
       const response = await axios.post(backendUrl + '/api/order/list',
-        { page: targetPage, limit: PAGE_SIZE, status: filter || undefined },
+        { page: targetPage, limit: PAGE_SIZE, status: filter || undefined, from, to },
         { headers: { token } })
 
       if (response.data.success) {
@@ -47,7 +84,7 @@ const Orders = ({ token }) => {
       setStatus('error')
       toast.error(error.message)
     }
-  }, [token, filter])
+  }, [token, filter, from, to])
 
   useEffect(() => { fetchOrders(1, false) }, [fetchOrders])
 
@@ -113,9 +150,31 @@ const Orders = ({ token }) => {
       <h3 className='font-medium text-gray-700'>Orders</h3>
       <span className='text-xs text-gray-500'>{orders.length} of {total}</span>
       <select
+        value={period}
+        onChange={(e) => setPeriod(e.target.value)}
+        className='ml-auto p-2 text-sm border border-gray-300 rounded'
+        aria-label='Filter by period'
+      >
+        {PERIODS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+      </select>
+      {range && (
+        <>
+          <input
+            type='date'
+            value={anchor}
+            onChange={(e) => e.target.value && setAnchor(e.target.value)}
+            className='p-2 text-sm border border-gray-300 rounded'
+            aria-label='Date within the selected period'
+          />
+          <span className='text-xs text-gray-500'>
+            {period === 'day' ? fmt(range.start) : `${fmt(range.start)} – ${fmt(range.last)}`}
+          </span>
+        </>
+      )}
+      <select
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
-        className='ml-auto p-2 text-sm border border-gray-300 rounded'
+        className='p-2 text-sm border border-gray-300 rounded'
         aria-label='Filter by status'
       >
         <option value=''>All statuses</option>
@@ -149,7 +208,9 @@ const Orders = ({ token }) => {
       <div>
         {header}
         <p className='text-sm text-gray-500'>
-          {filter ? `No orders with status “${filter}”.` : 'No orders yet.'}
+          {filter || range
+            ? `No orders${filter ? ` with status “${filter}”` : ''}${range ? ' in this period' : ''}.`
+            : 'No orders yet.'}
         </p>
       </div>
     )
