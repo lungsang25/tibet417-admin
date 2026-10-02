@@ -7,6 +7,7 @@ const Login = ({setToken}) => {
 
     const [email,setEmail] = useState('')
     const [password,setPassword] = useState('')
+    const [showPassword,setShowPassword] = useState(false)
 
     const onSubmitHandler = async (e) => {
         try {
@@ -35,7 +36,10 @@ const Login = ({setToken}) => {
                 </div>
                 <div className='mb-3 min-w-72'>
                     <p className='text-sm font-medium text-gray-700 mb-2'>Password</p>
-                    <input onChange={(e)=>setPassword(e.target.value)} value={password} className='rounded-md w-full px-3 py-2 border border-gray-300 outline-none' type="password" placeholder='Enter your password' required />
+                    <div className='relative'>
+                        <input onChange={(e)=>setPassword(e.target.value)} value={password} className='rounded-md w-full px-3 py-2 pr-16 border border-gray-300 outline-none' type={showPassword ? 'text' : 'password'} placeholder='Enter your password' required />
+                        <button type='button' onClick={()=>setShowPassword(s=>!s)} aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} className='absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-600'>{showPassword ? 'Hide' : 'Show'}</button>
+                    </div>
                 </div>
                 <button className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black' type="submit"> Login </button>
             </form>
