@@ -93,7 +93,10 @@ const Sale = ({ token }) => {
 
       applyServerState(saleRes.data)
       setProducts(productRes.data.products)
-      setSelected(new Set(saleRes.data.config.productIds))
+      // Drop ids of products deleted since the sale was saved; otherwise they
+      // stay invisibly selected and the backend rejects every save.
+      const existing = new Set(productRes.data.products.map((p) => p._id))
+      setSelected(new Set(saleRes.data.config.productIds.filter((id) => existing.has(id))))
       setStartInput(toInputValue(saleRes.data.config.startAt ?? Date.now()))
       setLoadState('ready')
     } catch (error) {
