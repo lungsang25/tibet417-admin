@@ -35,7 +35,7 @@ const Field = ({ label, value, onChange, suffix, min = 0, max, step = 1 }) => (
         min={min}
         max={max}
         step={step}
-        onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+        onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
         className='p-2 border border-gray-300 rounded w-full'
       />
       {suffix && <span className='text-xs text-gray-400 whitespace-nowrap'>{suffix}</span>}
@@ -100,7 +100,7 @@ const BonusProgram = ({ token }) => {
     try {
       const response = await axios.post(
         `${backendUrl}/api/bonus/admin/settings`,
-        { section, ...settings[section] },
+        { section, ...Object.fromEntries(Object.entries(settings[section]).map(([k, v]) => [k, v === '' ? 0 : v])) },
         { headers: { token } },
       )
       if (response.data.success) {
