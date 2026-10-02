@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import BonusProgram from './pages/BonusProgram'
 import Looks from './pages/Looks'
 import Sale from './pages/Sale'
+import Users from './pages/Users'
 import Login from './components/Login'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -43,6 +44,7 @@ const App = () => {
                 <Route path='/bonus-program' element={<BonusProgram token={token} />} />
                 <Route path='/looks' element={<Looks token={token} />} />
                 <Route path='/sale' element={<Sale token={token} />} />
+                <Route path='/users' element={<Users token={token} />} />
               </Routes>
             </div>
           </div>
