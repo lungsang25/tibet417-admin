@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#1a1915" />
+    <title>Tibet417 Admin | Back soon</title>
+    <!-- Temporary maintenance page. While vercel.json points outputDirectory at
+         this folder, every URL of the admin panel serves this file instead of
+         the app. Self-contained on purpose: no bundle, no web font, no images.
+         To bring the admin panel back, revert the commit that added this folder. -->
+    <style>
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        background: #faf9f7;
+        color: #1a1a1a;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        text-align: center;
+      }
+      main { width: 100%; max-width: 440px; }
+      .brand {
+        margin: 0 0 6px;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 28px;
+        letter-spacing: 0.04em;
+      }
+      .sub {
+        margin: 0 0 32px;
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #8a8580;
+      }
+      .rule { width: 48px; height: 1px; margin: 0 auto 32px; background: #c9c3bb; }
+      h1 { margin: 0 0 16px; font-size: clamp(20px, 5vw, 24px); font-weight: 500; line-height: 1.3; }
+      p { margin: 0 0 12px; color: #6f6a64; line-height: 1.6; font-size: 16px; }
+      @media (prefers-color-scheme: dark) {
+        body { background: #1a1915; color: #f2efea; }
+        p { color: #b3ada6; }
+        .rule { background: #4a463f; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand">Tibet417</div>
+      <div class="sub">Admin Panel</div>
+      <div class="rule"></div>
+      <h1>We'll be back soon</h1>
+      <p>The admin panel is temporarily unavailable while we carry out some maintenance.</p>
+      <p>Thank you for your patience. Please check back shortly.</p>
+    </main>
+  </body>
+</html>

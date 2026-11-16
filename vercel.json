@@ -1,4 +1,7 @@
 {
+  "framework": null,
+  "buildCommand": "echo Maintenance mode: serving maintenance/index.html",
+  "outputDirectory": "maintenance",
   "rewrites": [
     {
       "source": "/((?!assets/|.*\\.[a-zA-Z0-9]+$).*)",
